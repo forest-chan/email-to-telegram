@@ -1,0 +1,21 @@
+services:
+  nginx:
+    build:
+      dockerfile: docker/nginx/Dockerfile
+  php:
+    build:
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - ./:/var/www/html
+    expose:
+      - 9000
+  db:
+    build:
+        dockerfile: docker/db/Dockerfile
+        args:
+            POSTGRES_VERSION: ${POSTGRES_VERSION}
+            POSTGRES_DB: ${POSTGRES_DB}
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+        - ./docker/db/data:/я var/lib/postgresql/data:rw

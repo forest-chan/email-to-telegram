@@ -3,8 +3,6 @@
 
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
-parameters:
-
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -15,6 +13,45 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
+        exclude: '../src/{*DTO.php,*Exception.php}'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    # infrastructure
+    # telegram bot
+    App\Infrastructure\TelegramBot\Factory\TelegramBotClientFactoryInterface:
+        alias: App\Infrastructure\TelegramBot\Factory\TelegramBotClientLoggingDecoratorFactory
+    App\Infrastructure\TelegramBot\Factory\TelegramBotClientLoggingDecoratorFactory:
+        decorates: App\Infrastructure\TelegramBot\Factory\TelegramBotClientFactory
+        arguments:
+            $logger: '@logger'
+    App\Infrastructure\TelegramBot\Factory\TelegramBotClientFactory: ~
+    # imap
+    App\Infrastructure\Imap\Factory\ImapClientFactoryInterface:
+        alias: App\Infrastructure\Imap\Factory\ImapClientLoggingDecoratorFactory
+    App\Infrastructure\Imap\Factory\ImapClientLoggingDecoratorFactory:
+        decorates: App\Infrastructure\Imap\Factory\ImapClientFactory
+        arguments:
+            $logger: '@logger'
+    App\Infrastructure\Imap\Factory\ImapClientFactory: ~
+
+    # domain
+    # repositories
+    App\Domain\Repository\MailTelegramUser\MailTelegramUserRepositoryInterface:
+        alias: App\Domain\Repository\MailTelegramUser\MailTelegramUserRepository
+    App\Domain\Repository\MailTelegramUser\MailTelegramUserRepository:
+        class: App\Domain\Repository\MailTelegramUser\MailTelegramUserRepository
+        factory: [ "@doctrine", getRepository ]
+        arguments:
+            - App\Domain\Entity\MailTelegramUser\MailTelegramUser
+
+    # application
+    # commands
+    App\Application\Command\MailTelegram\MailTelegramMessageForwarderCommand:
+        arguments:
+            $retriesCount: '%env(resolve:MAIL_TELEGRAM_FORWARDER_RETRIES_COUNT)%'
+            $logger: '@logger'
+    # services
+    App\Application\Service\MailTelegram\Formatter\MailTelegramMessageFormatterInterface:
+        alias: App\Application\Service\MailTelegram\Formatter\MailTelegramMessageFormatter
+    App\Application\Service\MailTelegram\Forwarder\MailTelegramMessageForwarder:
+        arguments:
+            $telegramBotToken: '%env(resolve:TELEGRAM_BOT_TOKEN)%'
