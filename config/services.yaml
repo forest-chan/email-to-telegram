@@ -1,16 +1,7 @@
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
-
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 services:
-    # default configuration for services in *this* file
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
-
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
+        autowire: true
+        autoconfigure: true
     App\:
         resource: '../src/'
         exclude: '../src/{*DTO.php,*Exception.php}'
@@ -21,37 +12,36 @@ services:
         alias: App\Infrastructure\TelegramBot\Factory\TelegramBotClientLoggingDecoratorFactory
     App\Infrastructure\TelegramBot\Factory\TelegramBotClientLoggingDecoratorFactory:
         decorates: App\Infrastructure\TelegramBot\Factory\TelegramBotClientFactory
-        arguments:
-            $logger: '@logger'
     App\Infrastructure\TelegramBot\Factory\TelegramBotClientFactory: ~
     # imap
     App\Infrastructure\Imap\Factory\ImapClientFactoryInterface:
         alias: App\Infrastructure\Imap\Factory\ImapClientLoggingDecoratorFactory
     App\Infrastructure\Imap\Factory\ImapClientLoggingDecoratorFactory:
         decorates: App\Infrastructure\Imap\Factory\ImapClientFactory
-        arguments:
-            $logger: '@logger'
     App\Infrastructure\Imap\Factory\ImapClientFactory: ~
+    # persistence
+    # repositories
+    App\Infrastructure\Persistence\Doctrine\Repository\MailTelegram\MailTelegramRepository:
+        class: App\Infrastructure\Persistence\Doctrine\Repository\MailTelegram\MailTelegramRepository
+        factory: [ "@doctrine", getRepository ]
+        arguments:
+            - App\Domain\Entity\MailTelegram\MailTelegram
 
     # domain
     # repositories
-    App\Domain\Repository\MailTelegramUser\MailTelegramUserRepositoryInterface:
-        alias: App\Domain\Repository\MailTelegramUser\MailTelegramUserRepository
-    App\Domain\Repository\MailTelegramUser\MailTelegramUserRepository:
-        class: App\Domain\Repository\MailTelegramUser\MailTelegramUserRepository
-        factory: [ "@doctrine", getRepository ]
-        arguments:
-            - App\Domain\Entity\MailTelegramUser\MailTelegramUser
+    App\Domain\Repository\MailTelegram\MailTelegramRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\Repository\MailTelegram\MailTelegramRepository
 
     # application
     # commands
     App\Application\Command\MailTelegram\MailTelegramMessageForwarderCommand:
         arguments:
             $retriesCount: '%env(resolve:MAIL_TELEGRAM_FORWARDER_RETRIES_COUNT)%'
-            $logger: '@logger'
     # services
     App\Application\Service\MailTelegram\Formatter\MailTelegramMessageFormatterInterface:
         alias: App\Application\Service\MailTelegram\Formatter\MailTelegramMessageFormatter
-    App\Application\Service\MailTelegram\Forwarder\MailTelegramMessageForwarder:
+    App\Application\Service\MailTelegram\Forwarder\MailTelegramMessageForwarder: ~
+    App\Application\Service\TelegramBot\Registry\TelegramBotClientRegistry:
         arguments:
-            $telegramBotToken: '%env(resolve:TELEGRAM_BOT_TOKEN)%'
+            $telegramBotConfig:
+                'mail_telegram_forwarder': '%env(resolve:MAIL_TELEGRAM_FORWARDER_BOT_TOKEN)%'

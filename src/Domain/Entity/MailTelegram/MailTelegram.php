@@ -2,20 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Entity\MailTelegramUser;
+namespace App\Domain\Entity\MailTelegram;
 
 use App\Domain\Entity\AbstractEntity;
-use App\Domain\Entity\User\User;
 use App\Domain\Enum\EncodingType;
 use App\Domain\Enum\MailDirectory;
-use App\Domain\Repository\MailTelegramUser\MailTelegramUserRepository;
-use App\Domain\Repository\MailTelegramUser\MailTelegramUserRepositoryInterface;
+use App\Infrastructure\Persistence\Doctrine\Repository\MailTelegram\MailTelegramRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: MailTelegramUserRepository::class)]
-#[ORM\Table(name: 'mail_telegram_user')]
-class MailTelegramUser extends AbstractEntity
+#[ORM\Entity(repositoryClass: MailTelegramRepository::class)]
+#[ORM\Table(name: 'mail_telegram')]
+class MailTelegram extends AbstractEntity
 {
     #[ORM\Column(name: 'mail_server_path', type: Types::STRING, length: 255, nullable: false)]
     private string $mailServerPath;
@@ -49,10 +47,6 @@ class MailTelegramUser extends AbstractEntity
     #[ORM\Column(name: 'telegram_chat_id', type: Types::INTEGER, nullable: false)]
     private int $telegramChatId;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'mailTelegrams')]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
-    private User $user;
-
     public function __construct(
         string $mailServerPath,
         string $mail,
@@ -60,7 +54,6 @@ class MailTelegramUser extends AbstractEntity
         MailDirectory $mailDirectory,
         EncodingType $mailServerEncodingType,
         int $telegramChatId,
-        User $user
     ) {
         $this->mailServerPath = $mailServerPath;
         $this->mail = $mail;
@@ -68,7 +61,6 @@ class MailTelegramUser extends AbstractEntity
         $this->mailDirectory = $mailDirectory;
         $this->mailServerEncodingType = $mailServerEncodingType;
         $this->telegramChatId = $telegramChatId;
-        $this->user = $user;
     }
 
     public function getMailServerPath(): string
@@ -99,10 +91,5 @@ class MailTelegramUser extends AbstractEntity
     public function getTelegramChatId(): int
     {
         return $this->telegramChatId;
-    }
-
-    public function getUser(): User
-    {
-        return $this->user;
     }
 }

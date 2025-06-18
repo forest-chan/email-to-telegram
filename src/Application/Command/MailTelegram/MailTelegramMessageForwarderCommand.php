@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Command\MailTelegram;
 
 use App\Application\Service\MailTelegram\Forwarder\MailTelegramMessageForwarder;
-use App\Domain\Entity\MailTelegramUser\MailTelegramUser;
-use App\Domain\Repository\MailTelegramUser\MailTelegramUserRepositoryInterface;
+use App\Domain\Entity\MailTelegram\MailTelegram;
+use App\Domain\Repository\MailTelegram\MailTelegramRepositoryInterface;
 use App\Infrastructure\Imap\Exception\ImapException;
 use App\Infrastructure\TelegramBot\Exception\TelegramBotException;
 use Exception;
@@ -27,8 +27,8 @@ class MailTelegramMessageForwarderCommand extends Command
     public function __construct(
         private int $retriesCount,
         private LoggerInterface $logger,
-        private MailTelegramMessageForwarder $mailTelegramMessageForwarder,
-        private MailTelegramUserRepositoryInterface $mailTelegramUserRepository
+        private MailTelegramRepositoryInterface $mailTelegramRepository,
+        private MailTelegramMessageForwarder $mailTelegramMessageForwarder
     ) {
         parent::__construct();
     }
@@ -37,12 +37,12 @@ class MailTelegramMessageForwarderCommand extends Command
     {
         try {
             $processedMailTelegrams = 0;
-            $mailTelegramUsers = $this->mailTelegramUserRepository->findAllWithUser();
+            $mailTelegrams = $this->mailTelegramRepository->findAll();
 
-            $output->writeln('<info>' . sprintf('Will be processed %s mail telegrams', count($mailTelegramUsers)) . '</info>');
+            $output->writeln('<info>' . sprintf('Will be processed %s mail telegrams', count($mailTelegrams)) . '</info>');
 
-            foreach ($mailTelegramUsers as $mailTelegramUser) {
-                $this->processForwardWithRetries($mailTelegramUser);
+            foreach ($mailTelegrams as $mailTelegram) {
+                $this->processForwardWithRetries($mailTelegram);
 
                 ++$processedMailTelegrams;
             }
@@ -65,13 +65,13 @@ class MailTelegramMessageForwarderCommand extends Command
     /**
      * @throws Exception
      */
-    private function processForwardWithRetries(MailTelegramUser $mailTelegramUser): void
+    private function processForwardWithRetries(MailTelegram $mailTelegram): void
     {
         $currentAttempt = 0;
 
         while ($currentAttempt < $this->retriesCount) {
             try {
-                $this->mailTelegramMessageForwarder->forward($mailTelegramUser);
+                $this->mailTelegramMessageForwarder->forward($mailTelegram);
 
                 return;
             } catch (TelegramBotException $exception) {
