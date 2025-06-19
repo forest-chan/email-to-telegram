@@ -39,7 +39,18 @@ services:
             $retriesCount: '%env(resolve:MAIL_TELEGRAM_FORWARDER_RETRIES_COUNT)%'
     # services
     App\Application\Service\MailTelegram\Formatter\MailTelegramMessageFormatterInterface:
-        alias: App\Application\Service\MailTelegram\Formatter\MailTelegramMessageFormatter
+        tags: [ 'app.mail_telegram_message_formatter' ]
+    App\Application\Service\MailTelegram\Formatter\MailTelegramMessageTextHtmlFormatter:
+        tags:
+            - { name: 'app.mail_telegram_message_formatter', priority: 100 }
+    App\Application\Service\MailTelegram\Formatter\MailTelegramMessageTextPlainFormatter:
+        tags:
+            - { name: 'app.mail_telegram_message_formatter', priority: 1 }
+    App\Application\Service\MailTelegram\Formatter\Registry\MailTelegramMessageFormatterRegistry:
+        arguments:
+            $formatters: !tagged_iterator app.mail_telegram_message_formatter
+    App\Application\Service\MailTelegram\Formatter\MailTelegramMessageHeaderFormatterInterface:
+        alias: App\Application\Service\MailTelegram\Formatter\MailTelegramMessageHeaderFormatter
     App\Application\Service\MailTelegram\Forwarder\MailTelegramMessageForwarder: ~
     App\Application\Service\TelegramBot\Registry\TelegramBotClientRegistry:
         arguments:

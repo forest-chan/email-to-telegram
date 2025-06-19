@@ -6,7 +6,7 @@ namespace App\Application\Service\MailTelegram\Forwarder;
 
 use App\Application\Service\Imap\Assembler\MailBoxDTOAssembler;
 use App\Application\Service\Imap\Registry\ImapClientRegistry;
-use App\Application\Service\MailTelegram\Formatter\MailTelegramMessageFormatterInterface;
+use App\Application\Service\MailTelegram\Formatter\Registry\MailTelegramMessageFormatterRegistry;
 use App\Application\Service\TelegramBot\Enum\TelegramBot;
 use App\Application\Service\TelegramBot\Registry\TelegramBotClientRegistry;
 use App\Domain\Entity\MailTelegram\MailTelegram;
@@ -15,6 +15,7 @@ use App\Infrastructure\Imap\DTO\GetMailIdsRequestDTO;
 use App\Infrastructure\Imap\Enum\SearchCriteria;
 use App\Infrastructure\Imap\Enum\SortCriteria;
 use App\Infrastructure\TelegramBot\DTO\SendMessageRequestDTO;
+use App\Infrastructure\TelegramBot\Enum\ParseMode;
 
 class MailTelegramMessageForwarder
 {
@@ -22,7 +23,7 @@ class MailTelegramMessageForwarder
         private MailBoxDTOAssembler $mailBoxDTOAssembler,
         private ImapClientRegistry $imapClientRegistry,
         private TelegramBotClientRegistry $telegramBotClientRegistry,
-        private MailTelegramMessageFormatterInterface $mailTelegramMessageFormatter,
+        private MailTelegramMessageFormatterRegistry $mailTelegramMessageFormatterRegistry,
     ) {
     }
 
@@ -42,10 +43,12 @@ class MailTelegramMessageForwarder
 
         foreach ($mailIds as $mailId) {
             $mailDTO = $imapClient->getMail($mailId);
+            $messageFormatter = $this->mailTelegramMessageFormatterRegistry->getFormatter($mailDTO);
 
             $telegramBotClient->sendMessage(new SendMessageRequestDTO(
                 chatId: $mailTelegram->getTelegramChatId(),
-                text: $this->mailTelegramMessageFormatter->format($mailDTO),
+                text: $messageFormatter->format($mailDTO),
+                parseMode: ParseMode::HTML,
             ));
         }
     }
