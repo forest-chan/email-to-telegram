@@ -8,6 +8,5 @@ use App\Infrastructure\Imap\DTO\MailDTO;
 
 interface MailTelegramMessageFormatterInterface
 {
-    public function supports(MailDTO $mailDTO): bool;
     public function format(MailDTO $mailDTO): string;
 }

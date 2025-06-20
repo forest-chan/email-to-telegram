@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Service\MailTelegram\Formatter;
+namespace App\Application\Service\MailTelegram\Formatter\MessageBody;
 
 use App\Infrastructure\Imap\DTO\MailDTO;
 use DOMDocument;
@@ -11,14 +11,14 @@ use DOMNode;
 use DOMText;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 
-class MailTelegramMessageTextHtmlFormatter implements MailTelegramMessageFormatterInterface
+class MailTelegramMessageBodyHtmlFormatter implements MailTelegramMessageBodyFormatterInterface
 {
     private const HTML_TAG_BODY = 'body';
     private const BODY_FIRST_ELEMENT_INDEX = 0;
 
     public function __construct(
         private HtmlSanitizerInterface $htmlSanitizer,
-        private MailTelegramMessageHeaderFormatterInterface $headerFormatter,
+        private HtmlSanitizerInterface $htmlTagSymbolsSanitizer,
     ) {
     }
 
@@ -29,8 +29,6 @@ class MailTelegramMessageTextHtmlFormatter implements MailTelegramMessageFormatt
 
     public function format(MailDTO $mailDTO): string
     {
-        $formattedMailHeader = $this->headerFormatter->format($mailDTO->getMailHeaderDTO());
-
         $sanitizedTextHtml = $this->htmlSanitizer->sanitize($mailDTO->getTextHtml());
 
         $DOMDocument = $this
@@ -40,8 +38,8 @@ class MailTelegramMessageTextHtmlFormatter implements MailTelegramMessageFormatt
             ->item(self::BODY_FIRST_ELEMENT_INDEX);
 
         return $DOMDocumentBody instanceof DOMNode
-            ? $formattedMailHeader . $this->extractTextRecursively($DOMDocumentBody)
-            : $formattedMailHeader;
+            ? $this->extractTextRecursively($DOMDocumentBody)
+            : '';
     }
 
     public function getDOMDocument(string $sanitizedTextHtml): DOMDocument
@@ -59,9 +57,8 @@ class MailTelegramMessageTextHtmlFormatter implements MailTelegramMessageFormatt
         foreach ($DOMNode->childNodes as $childNode) {
             if ($childNode instanceof DOMText) {
                 $trimmedText = trim($childNode->nodeValue);
-                $replacedText = str_replace(['<', '>'], ['(', ')'], $trimmedText);
 
-                $text .= $replacedText . PHP_EOL;
+                $text .= $this->htmlTagSymbolsSanitizer->sanitize($trimmedText) . PHP_EOL;
             } elseif ($childNode instanceof DOMElement) {
                 $text .= trim($this->extractTextRecursively($childNode));
             }
