@@ -2,20 +2,49 @@ services:
   nginx:
     build:
       dockerfile: docker/nginx/Dockerfile
-  php:
-    build:
-      dockerfile: docker/php/Dockerfile
-    volumes:
-      - ./:/var/www/html
-    expose:
-      - 9000
+    restart: unless-stopped
+    ports:
+        - "80:80"
+    networks:
+        - internal
   db:
     build:
         dockerfile: docker/db/Dockerfile
         args:
             POSTGRES_VERSION: ${POSTGRES_VERSION}
-            POSTGRES_DB: ${POSTGRES_DB}
-            POSTGRES_USER: ${POSTGRES_USER}
-            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    environment:
+        POSTGRES_DB: ${POSTGRES_DB}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-        - ./docker/db/data:/я var/lib/postgresql/data:rw
+        - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+        - internal
+    healthcheck:
+        test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
+        interval: 5s
+        timeout: 5s
+        retries: 3
+        start_period: 10s
+  php:
+    build:
+        dockerfile: docker/php/Dockerfile
+    restart: unless-stopped
+    networks:
+        - internal
+  migrations:
+      build:
+          dockerfile: docker/php/Dockerfile
+      depends_on:
+          db:
+            condition: service_healthy
+      entrypoint: ["php", "bin/console", "doctrine:migrations:migrate", "--no-interaction"]
+      networks:
+          - internal
+
+volumes:
+    db-data:
+networks:
+    internal:
+        driver: bridge

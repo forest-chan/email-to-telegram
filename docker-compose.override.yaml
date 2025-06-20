@@ -2,6 +2,9 @@ services:
   nginx:
     ports:
       - "8080:80"
+  php:
+      volumes:
+          - ./:/var/www/html:rw
   db:
     ports:
       - "5432:5432"
