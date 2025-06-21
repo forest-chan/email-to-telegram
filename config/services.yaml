@@ -1,3 +1,6 @@
+parameters:
+    app.version: '%env(resolve:APP_VERSION)%'
+
 services:
     _defaults:
         autowire: true
@@ -33,6 +36,10 @@ services:
         alias: App\Infrastructure\Persistence\Doctrine\Repository\MailTelegram\MailTelegramRepository
 
     # application
+    # handlers
+    App\Application\Http\API\Handler\Version\GetVersionHandler:
+        arguments:
+            $apiVersion: '%app.version%'
     # commands
     App\Application\Command\MailTelegram\MailTelegramMessageForwarderCommand:
         arguments:

@@ -1,0 +1,4 @@
+api_get_version:
+    path: /api/version
+    controller: App\Application\Http\API\Controller\Version\GetVersionController
+    methods: [ GET ]
