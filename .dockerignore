@@ -1,1 +1,8 @@
 docker-compose.override.yaml
+.git
+.gitignore
+.idea
+README.md
+var
+.env
+.env.example

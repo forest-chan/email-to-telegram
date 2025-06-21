@@ -7,6 +7,8 @@ services:
         - "80:80"
     networks:
         - internal
+    depends_on:
+        - php
   db:
     build:
         dockerfile: docker/db/Dockerfile
@@ -31,6 +33,9 @@ services:
     build:
         dockerfile: docker/php/Dockerfile
     restart: unless-stopped
+    depends_on:
+        db:
+            condition: service_healthy
     networks:
         - internal
   migrations:
@@ -39,7 +44,17 @@ services:
       depends_on:
           db:
             condition: service_healthy
-      entrypoint: ["php", "bin/console", "doctrine:migrations:migrate", "--no-interaction"]
+      command: ["php", "bin/console", "doctrine:migrations:migrate", "--no-interaction"]
+      networks:
+          - internal
+  scheduler:
+      build:
+          dockerfile: docker/php/Dockerfile
+      restart: unless-stopped
+      depends_on:
+          db:
+              condition: service_healthy
+      command: ["cron", "-f"]
       networks:
           - internal
 
