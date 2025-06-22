@@ -10,4 +10,6 @@ interface MailTelegramRepositoryInterface
 {
     /** @return array<MailTelegram> */
     public function findAll(): array;
+
+    public function findById(int $id): ?MailTelegram;
 }

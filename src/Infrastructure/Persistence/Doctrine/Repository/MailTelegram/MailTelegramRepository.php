@@ -13,6 +13,11 @@ use Doctrine\ORM\EntityRepository;
  */
 class MailTelegramRepository extends EntityRepository implements MailTelegramRepositoryInterface
 {
+    public function findById(int $id): ?MailTelegram
+    {
+        return $this->find($id);
+    }
+
     protected function getEntityName(): string
     {
         return MailTelegram::class;

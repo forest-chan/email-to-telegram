@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace App\Application\Http\API\Controller;
 
-use App\Application\Http\API\Hydrator\Violation\ViolationHydrator;
+use App\Application\Http\API\Hydrator\APIResponseHydrator;
 use JsonException;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController as SymfonyController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Validator\ConstraintViolationListInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class AbstractAPIController extends SymfonyController
 {
     public function __construct(
-        protected ValidatorInterface $validator,
-        protected ViolationHydrator $violationHydrator,
+        protected LoggerInterface $logger,
+        protected APIResponseHydrator $apiResponseHydrator,
     ) {
     }
 
@@ -34,19 +33,21 @@ class AbstractAPIController extends SymfonyController
         );
     }
 
-    protected function jsonSuccessResponse(): JsonResponse
+    protected function jsonSuccessResponse(int $statusCode = Response::HTTP_OK): JsonResponse
     {
-        return $this->json(['success' => true], Response::HTTP_OK);
+        return $this->jsonResponse(['success' => true], $statusCode);
     }
 
-    protected function jsonErrorResponse(mixed $data, int $statusCode): JsonResponse
+    protected function jsonFailResponse(int $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR): JsonResponse
     {
-        $extractedData = [];
+        return $this->jsonResponse(['success' => false], $statusCode);
+    }
 
-        if ($data instanceof ConstraintViolationListInterface) {
-            $extractedData = $this->violationHydrator->extract($data);
-        }
-
-        return $this->json($extractedData, $statusCode);
+    protected function jsonResponse(array $responseData, int $statusCode = Response::HTTP_OK): JsonResponse
+    {
+        return $this->json(
+            data: $this->apiResponseHydrator->extract($responseData),
+            status: $statusCode,
+        );
     }
 }

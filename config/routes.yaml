@@ -1,9 +1,22 @@
+# application routes
+# api version
 api_get_version:
     path: /api/version
     controller: App\Application\Http\API\Controller\Version\GetVersionController
     methods: [ GET ]
 
+# mail telegram
 api_create_mail_telegram:
     path: /api/mail-telegram
     controller: App\Application\Http\API\Controller\MailTelegram\CreateMailTelegramController
     methods: [ POST ]
+api_get_mail_telegram_list:
+    path: /api/mail-telegram
+    controller: App\Application\Http\API\Controller\MailTelegram\GetMailTelegramListController
+    methods: [ GET ]
+api_delete_mail_telegram:
+    path: /api/mail-telegram/{id}
+    controller: App\Application\Http\API\Controller\MailTelegram\DeleteMailTelegramController
+    methods: [ DELETE ]
+    requirements:
+        id: '\d+'
