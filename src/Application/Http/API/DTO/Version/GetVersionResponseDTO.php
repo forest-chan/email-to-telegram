@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Http\API\Response\Version;
+namespace App\Application\Http\API\DTO\Version;
 
-class GetVersionResponse
+class GetVersionResponseDTO
 {
     public function __construct(
         private string $apiVersion,

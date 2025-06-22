@@ -2,3 +2,8 @@ api_get_version:
     path: /api/version
     controller: App\Application\Http\API\Controller\Version\GetVersionController
     methods: [ GET ]
+
+api_create_mail_telegram:
+    path: /api/mail-telegram
+    controller: App\Application\Http\API\Controller\MailTelegram\CreateMailTelegramController
+    methods: [ POST ]

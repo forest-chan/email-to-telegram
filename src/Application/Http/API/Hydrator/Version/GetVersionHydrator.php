@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Application\Http\API\Hydrator\Version;
 
-use App\Application\Http\API\Response\Version\GetVersionResponse;
+use App\Application\Http\API\DTO\Version\GetVersionResponseDTO;
 
 class GetVersionHydrator
 {
-    public function hydrate(GetVersionResponse $getVersionResponse): array
+    public function extract(GetVersionResponseDTO $getVersionResponseDTO): array
     {
         return [
-            'api_version' => $getVersionResponse->getApiVersion(),
+            'api_version' => $getVersionResponseDTO->getApiVersion(),
         ];
     }
 }

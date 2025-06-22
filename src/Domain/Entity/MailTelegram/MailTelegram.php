@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MailTelegramRepository::class)]
 #[ORM\Table(name: 'mail_telegram')]
+#[ORM\HasLifecycleCallbacks]
 class MailTelegram extends AbstractEntity
 {
     #[ORM\Column(name: 'mail_server_path', type: Types::STRING, length: 255, nullable: false)]
