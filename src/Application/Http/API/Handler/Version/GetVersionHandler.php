@@ -8,12 +8,12 @@ use App\Application\Http\API\DTO\Version\GetVersionResponseDTO;
 
 class GetVersionHandler
 {
-    public function __construct(private string $apiVersion)
+    public function __construct(private string $APIVersion)
     {
     }
 
     public function handle(): GetVersionResponseDTO
     {
-        return new GetVersionResponseDTO($this->apiVersion);
+        return new GetVersionResponseDTO($this->APIVersion);
     }
 }

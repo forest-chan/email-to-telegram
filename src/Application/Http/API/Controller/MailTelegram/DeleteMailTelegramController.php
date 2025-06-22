@@ -9,16 +9,23 @@ use App\Application\Http\API\Hydrator\MailTelegram\DeleteMailTelegramHandler;
 use App\Domain\Exception\EntityNotFoundException;
 use Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class DeleteMailTelegramController extends AbstractAPIController
 {
     public function __invoke(
-        int $id,
+        Request $request,
         DeleteMailTelegramHandler $handler
     ): JsonResponse {
         try {
-            $handler->handle($id);
+            if (!$this->isAuthenticated($request)) {
+                return $this->jsonUnauthorizedResponse();
+            }
+
+            $mailTelegramId = (int) $request->get('id');
+
+            $handler->handle($mailTelegramId);
 
             return $this->jsonSuccessResponse();
         } catch (EntityNotFoundException $exception) {

@@ -9,14 +9,20 @@ use App\Application\Http\API\Handler\MailTelegram\GetMailTelegramListHandler;
 use App\Application\Http\API\Hydrator\MailTelegram\GetMailTelegramListHydrator;
 use Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 
 class GetMailTelegramListController extends AbstractAPIController
 {
     public function __invoke(
+        Request $request,
         GetMailTelegramListHandler $handler,
         GetMailTelegramListHydrator $hydrator
     ): JsonResponse {
         try {
+            if (!$this->isAuthenticated($request)) {
+                return $this->jsonUnauthorizedResponse();
+            }
+
             $mailTelegramList = $handler->handle();
 
             return $this->jsonResponse($hydrator->extract($mailTelegramList));

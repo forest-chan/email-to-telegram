@@ -25,6 +25,10 @@ class CreateMailTelegramController extends AbstractAPIController
         CreateMailTelegramHandler $handler
     ): JsonResponse {
         try {
+            if (!$this->isAuthenticated($request)) {
+                return $this->jsonUnauthorizedResponse();
+            }
+
             $mailTelegramRequestDTO = $requestDTOAssembler->assemble(
                 requestContent: $this->getRequestContentDecoded($request)
             );

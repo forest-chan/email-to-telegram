@@ -8,7 +8,7 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 class ViolationListHydrator
 {
-    public function __construct(private ViolationItemHydrator $itemHydrator)
+    public function __construct(private ViolationListItemHydrator $itemHydrator)
     {
     }
 
@@ -21,7 +21,7 @@ class ViolationListHydrator
         }
 
         return [
-            'errors' => $extractedItems,
+            'violations' => $extractedItems,
         ];
     }
 }

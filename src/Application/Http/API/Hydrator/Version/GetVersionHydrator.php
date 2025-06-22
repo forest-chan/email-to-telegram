@@ -11,7 +11,7 @@ class GetVersionHydrator
     public function extract(GetVersionResponseDTO $getVersionResponseDTO): array
     {
         return [
-            'api_version' => $getVersionResponseDTO->getApiVersion(),
+            'api_version' => $getVersionResponseDTO->getAPIVersion(),
         ];
     }
 }

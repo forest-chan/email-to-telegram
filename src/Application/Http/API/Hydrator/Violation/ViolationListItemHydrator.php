@@ -6,7 +6,7 @@ namespace App\Application\Http\API\Hydrator\Violation;
 
 use Symfony\Component\Validator\ConstraintViolationInterface;
 
-class ViolationItemHydrator
+class ViolationListItemHydrator
 {
     public function extract(ConstraintViolationInterface $violation): array
     {

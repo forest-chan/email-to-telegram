@@ -39,12 +39,17 @@ services:
     # handlers
     App\Application\Http\API\Handler\Version\GetVersionHandler:
         arguments:
-            $apiVersion: '%app.version%'
+            $APIVersion: '%app.version%'
     # commands
     App\Application\Command\MailTelegram\MailTelegramMessageForwarderCommand:
         arguments:
             $retriesCount: '%env(resolve:MAIL_TELEGRAM_FORWARDER_RETRIES_COUNT)%'
     # services
+    App\Application\Service\Auth\TokenAuthenticatorInterface:
+        alias: App\Application\Service\Auth\APITokenAuthenticator
+    App\Application\Service\Auth\APITokenAuthenticator:
+        arguments:
+            $APIToken: '%env(resolve:API_AUTH_TOKEN)%'
     App\Application\Service\MailTelegram\Formatter\MailTelegramMessageFormatterInterface:
         alias: App\Application\Service\MailTelegram\Formatter\MailTelegramMessageFormatter
     App\Application\Service\MailTelegram\Formatter\MessageHeader\MailTelegramMessageHeaderFormatterInterface:

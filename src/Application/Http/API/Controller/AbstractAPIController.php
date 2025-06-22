@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Application\Http\API\Controller;
 
+use App\Application\Http\API\DTO\Error\ErrorListItemResponseDTO;
+use App\Application\Http\API\DTO\Error\ErrorListResponseDTO;
 use App\Application\Http\API\Hydrator\APIResponseHydrator;
+use App\Application\Http\API\Hydrator\Error\ErrorListHydrator;
+use App\Application\Service\Auth\TokenAuthenticatorInterface;
 use JsonException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController as SymfonyController;
@@ -12,12 +16,27 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class AbstractAPIController extends SymfonyController
+abstract class AbstractAPIController extends SymfonyController
 {
+    private const X_API_TOKEN_HEADER = 'X-API-Token';
+
     public function __construct(
         protected LoggerInterface $logger,
+        protected ErrorListHydrator $errorListHydrator,
         protected APIResponseHydrator $apiResponseHydrator,
+        protected TokenAuthenticatorInterface $tokenAuthenticator,
     ) {
+    }
+
+    protected function isAuthenticated(Request $request): bool
+    {
+        $APIToken = $request->headers->get(self::X_API_TOKEN_HEADER);
+
+        if ($APIToken === null) {
+            return false;
+        }
+
+        return $this->tokenAuthenticator->authenticate($APIToken);
     }
 
     /**
@@ -30,6 +49,17 @@ class AbstractAPIController extends SymfonyController
             associative: true,
             depth: 512,
             flags: JSON_THROW_ON_ERROR
+        );
+    }
+
+    protected function jsonUnauthorizedResponse(): JsonResponse
+    {
+        $errorList = (new ErrorListResponseDTO())
+            ->addErrorListItem(new ErrorListItemResponseDTO('Unauthorized'));
+
+        return $this->jsonResponse(
+            responseData: $this->errorListHydrator->extract($errorList),
+            statusCode: Response::HTTP_UNAUTHORIZED
         );
     }
 

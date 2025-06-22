@@ -7,7 +7,7 @@ namespace App\Application\Http\API\DTO\MailTelegram;
 class GetMailTelegramListResponseDTO
 {
     /** @var array<GetMailTelegramListItemResponseDTO> */
-    private array $mailTelegramListItems;
+    private array $mailTelegramListItems = [];
 
     public function addMailTelegramListItem(GetMailTelegramListItemResponseDTO $itemResponseDTO): self
     {
