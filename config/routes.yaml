@@ -1,10 +1,9 @@
-# application routes
+# api routes
 # api version
 api_get_version:
     path: /api/version
     controller: App\Application\Http\API\Controller\Version\GetVersionController
     methods: [ GET ]
-
 # mail telegram
 api_create_mail_telegram:
     path: /api/mail-telegram

@@ -7,7 +7,6 @@ namespace App\Application\Http\API\Controller\MailTelegram;
 use App\Application\Http\API\Assembler\MailTelegram\CreateMailTelegramRequestDTOAssembler;
 use App\Application\Http\API\Controller\AbstractAPIController;
 use App\Application\Http\API\Handler\MailTelegram\CreateMailTelegramHandler;
-use App\Application\Http\API\Hydrator\Violation\ViolationListHydrator;
 use Exception;
 use JsonException;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,48 +19,35 @@ class CreateMailTelegramController extends AbstractAPIController
     public function __invoke(
         Request $request,
         ValidatorInterface $validator,
-        ViolationListHydrator $violationHydrator,
         CreateMailTelegramRequestDTOAssembler $requestDTOAssembler,
         CreateMailTelegramHandler $handler
     ): JsonResponse {
         try {
-            if (!$this->isAuthenticated($request)) {
-                return $this->jsonUnauthorizedResponse();
-            }
+            $mailTelegramRequestDTO = $requestDTOAssembler->assemble($this->getRequestContentDecoded($request));
 
-            $mailTelegramRequestDTO = $requestDTOAssembler->assemble(
-                requestContent: $this->getRequestContentDecoded($request)
-            );
-            $violations = $validator->validate(
-                value: $mailTelegramRequestDTO
-            );
+            $violations = $validator->validate($mailTelegramRequestDTO);
 
             if ($violations->count() > 0) {
-                return $this->jsonResponse(
-                    responseData: $violationHydrator->extract($violations),
-                    statusCode: Response::HTTP_UNPROCESSABLE_ENTITY
-                );
+                return $this->jsonErrorResponse($violations, Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            $handler->handle(
-                requestDTO: $mailTelegramRequestDTO
-            );
+            $handler->handle($mailTelegramRequestDTO);
 
-            return $this->jsonSuccessResponse();
+            return $this->jsonSuccessResponse([], Response::HTTP_OK);
         } catch (JsonException $exception) {
             $this->logger->error('Request deserialization failed on create mail telegram', [
                 'method' => __METHOD__,
                 'exception' => (string) $exception,
             ]);
 
-            return $this->jsonFailResponse(Response::HTTP_BAD_REQUEST);
+            return $this->jsonErrorResponse([self::BAD_REQUEST_ERROR_MESSAGE], Response::HTTP_BAD_REQUEST);
         } catch (Exception $exception) {
             $this->logger->error('Unexpected error on create mail telegram', [
                 'method' => __METHOD__,
                 'exception' => (string) $exception,
             ]);
 
-            return $this->jsonFailResponse();
+            return $this->jsonErrorResponse([self::INTERNAL_SERVER_ERROR_ERROR_MESSAGE], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

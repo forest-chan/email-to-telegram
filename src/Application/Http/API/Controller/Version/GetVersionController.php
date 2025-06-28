@@ -9,6 +9,7 @@ use App\Application\Http\API\Handler\Version\GetVersionHandler;
 use App\Application\Http\API\Hydrator\Version\GetVersionHydrator;
 use Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class GetVersionController extends AbstractAPIController
 {
@@ -19,14 +20,14 @@ class GetVersionController extends AbstractAPIController
         try {
             $apiVersionResponseDTO = $handler->handle();
 
-            return $this->jsonResponse($hydrator->extract($apiVersionResponseDTO));
+            return $this->jsonSuccessResponse($hydrator->extract($apiVersionResponseDTO), Response::HTTP_OK);
         } catch (Exception $exception) {
-            $this->logger->error('Unexpected error on get api version', [
+            $this->logger->error('Unexpected error on get version', [
                 'method' => __METHOD__,
                 'exception' => (string) $exception,
             ]);
 
-            return $this->jsonFailResponse();
+            return $this->jsonErrorResponse([self::INTERNAL_SERVER_ERROR_ERROR_MESSAGE], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

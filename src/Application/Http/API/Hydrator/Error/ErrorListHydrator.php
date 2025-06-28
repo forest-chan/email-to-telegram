@@ -20,8 +20,6 @@ class ErrorListHydrator
             $extractedErrors[] = $this->itemHydrator->extract($errorItem);
         }
 
-        return [
-            'errors' => $extractedErrors,
-        ];
+        return $extractedErrors;
     }
 }

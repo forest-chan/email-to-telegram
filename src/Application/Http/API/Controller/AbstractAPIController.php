@@ -4,39 +4,26 @@ declare(strict_types=1);
 
 namespace App\Application\Http\API\Controller;
 
-use App\Application\Http\API\DTO\Error\ErrorListItemResponseDTO;
+use App\Application\Http\API\Assembler\Error\ErrorListAssembler;
 use App\Application\Http\API\DTO\Error\ErrorListResponseDTO;
 use App\Application\Http\API\Hydrator\APIResponseHydrator;
-use App\Application\Http\API\Hydrator\Error\ErrorListHydrator;
-use App\Application\Service\Auth\TokenAuthenticatorInterface;
 use JsonException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController as SymfonyController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 abstract class AbstractAPIController extends SymfonyController
 {
-    private const X_API_TOKEN_HEADER = 'X-API-Token';
+    protected const BAD_REQUEST_ERROR_MESSAGE = 'Bad request';
+    protected const INTERNAL_SERVER_ERROR_ERROR_MESSAGE = 'Internal server error';
 
     public function __construct(
         protected LoggerInterface $logger,
-        protected ErrorListHydrator $errorListHydrator,
-        protected APIResponseHydrator $apiResponseHydrator,
-        protected TokenAuthenticatorInterface $tokenAuthenticator,
+        private ErrorListAssembler $errorListAssembler,
+        private APIResponseHydrator $apiResponseHydrator
     ) {
-    }
-
-    protected function isAuthenticated(Request $request): bool
-    {
-        $APIToken = $request->headers->get(self::X_API_TOKEN_HEADER);
-
-        if ($APIToken === null) {
-            return false;
-        }
-
-        return $this->tokenAuthenticator->authenticate($APIToken);
     }
 
     /**
@@ -52,31 +39,38 @@ abstract class AbstractAPIController extends SymfonyController
         );
     }
 
-    protected function jsonUnauthorizedResponse(): JsonResponse
+    protected function jsonErrorResponse(mixed $errors, int $statusCode): JsonResponse
     {
-        $errorList = (new ErrorListResponseDTO())
-            ->addErrorListItem(new ErrorListItemResponseDTO('Unauthorized'));
+        $errorListResponseDTO = $errors instanceof ConstraintViolationListInterface
+            ? $this->errorListAssembler->assembleFromViolationList($errors)
+            : $this->errorListAssembler->assembleFromErrorMessages($errors);
 
         return $this->jsonResponse(
-            responseData: $this->errorListHydrator->extract($errorList),
-            statusCode: Response::HTTP_UNAUTHORIZED
+            responseData: [],
+            statusCode: $statusCode,
+            success: false,
+            errorListResponseDTO: $errorListResponseDTO
         );
     }
 
-    protected function jsonSuccessResponse(int $statusCode = Response::HTTP_OK): JsonResponse
+    protected function jsonSuccessResponse(array $responseData, int $statusCode): JsonResponse
     {
-        return $this->jsonResponse(['success' => true], $statusCode);
+        return $this->jsonResponse(
+            responseData: $responseData,
+            statusCode: $statusCode,
+            success: true,
+            errorListResponseDTO: null
+        );
     }
 
-    protected function jsonFailResponse(int $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR): JsonResponse
-    {
-        return $this->jsonResponse(['success' => false], $statusCode);
-    }
-
-    protected function jsonResponse(array $responseData, int $statusCode = Response::HTTP_OK): JsonResponse
-    {
+    private function jsonResponse(
+        array $responseData,
+        int $statusCode,
+        bool $success,
+        ?ErrorListResponseDTO $errorListResponseDTO
+    ): JsonResponse {
         return $this->json(
-            data: $this->apiResponseHydrator->extract($responseData),
+            data: $this->apiResponseHydrator->extract($responseData, $success, $errorListResponseDTO),
             status: $statusCode,
         );
     }

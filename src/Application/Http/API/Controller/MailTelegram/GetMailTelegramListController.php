@@ -10,6 +10,7 @@ use App\Application\Http\API\Hydrator\MailTelegram\GetMailTelegramListHydrator;
 use Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class GetMailTelegramListController extends AbstractAPIController
 {
@@ -19,20 +20,16 @@ class GetMailTelegramListController extends AbstractAPIController
         GetMailTelegramListHydrator $hydrator
     ): JsonResponse {
         try {
-            if (!$this->isAuthenticated($request)) {
-                return $this->jsonUnauthorizedResponse();
-            }
-
             $mailTelegramList = $handler->handle();
 
-            return $this->jsonResponse($hydrator->extract($mailTelegramList));
+            return $this->jsonSuccessResponse($hydrator->extract($mailTelegramList), Response::HTTP_OK);
         } catch (Exception $exception) {
             $this->logger->error('Unexpected error on get mail telegram list', [
                 'method' => __METHOD__,
                 'exception' => (string) $exception,
             ]);
 
-            return $this->jsonFailResponse();
+            return $this->jsonErrorResponse([], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

@@ -19,29 +19,25 @@ class DeleteMailTelegramController extends AbstractAPIController
         DeleteMailTelegramHandler $handler
     ): JsonResponse {
         try {
-            if (!$this->isAuthenticated($request)) {
-                return $this->jsonUnauthorizedResponse();
-            }
-
             $mailTelegramId = (int) $request->get('id');
 
             $handler->handle($mailTelegramId);
 
-            return $this->jsonSuccessResponse();
+            return $this->jsonSuccessResponse([], Response::HTTP_OK);
         } catch (EntityNotFoundException $exception) {
             $this->logger->warning('Not found mail telegram to deletion', [
                 'method' => __METHOD__,
                 'exception' => (string) $exception,
             ]);
 
-            return $this->jsonFailResponse(Response::HTTP_BAD_REQUEST);
+            return $this->jsonErrorResponse([self::BAD_REQUEST_ERROR_MESSAGE], Response::HTTP_BAD_REQUEST);
         } catch (Exception $exception) {
             $this->logger->error('Unexpected error on delete mail telegram', [
                 'method' => __METHOD__,
                 'exception' => (string) $exception,
             ]);
 
-            return $this->jsonFailResponse();
+            return $this->jsonErrorResponse([self::INTERNAL_SERVER_ERROR_ERROR_MESSAGE], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

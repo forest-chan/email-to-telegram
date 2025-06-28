@@ -36,10 +36,14 @@ services:
         alias: App\Infrastructure\Persistence\Doctrine\Repository\MailTelegram\MailTelegramRepository
 
     # application
+    # event listeners
+    App\Application\Http\API\EventListener\APIRequestAuthenticationListener:
+        tags:
+            - { name: 'kernel.event_listener', event: kernel.request, method: onKernelRequest, priority: 100 }
     # handlers
     App\Application\Http\API\Handler\Version\GetVersionHandler:
         arguments:
-            $APIVersion: '%app.version%'
+            $version: '%app.version%'
     # commands
     App\Application\Command\MailTelegram\MailTelegramMessageForwarderCommand:
         arguments:

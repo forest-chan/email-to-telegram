@@ -7,12 +7,12 @@ namespace App\Application\Http\API\DTO\Version;
 class GetVersionResponseDTO
 {
     public function __construct(
-        private string $APIVersion,
+        private string $version,
     ) {
     }
 
-    public function getAPIVersion(): string
+    public function getVersion(): string
     {
-        return $this->APIVersion;
+        return $this->version;
     }
 }
