@@ -18,7 +18,6 @@ RUN chown -R www-data:www-data /var/www/html/.* \
     cron \
     && chmod 0644 /etc/cron.d/crontab \
     && crontab /etc/cron.d/crontab \
-    && cp .env.example .env \
     && docker-php-ext-install pdo_pgsql pgsql \
     && docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
     && docker-php-ext-install imap \
