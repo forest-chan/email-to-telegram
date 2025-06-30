@@ -1,7 +1,8 @@
 services:
   nginx:
     build:
-      dockerfile: docker/nginx/Dockerfile
+        context: .
+        dockerfile: docker/nginx/Dockerfile
     restart: unless-stopped
     ports:
         - "80:80"
@@ -11,6 +12,7 @@ services:
         - php
   db:
     build:
+        context: .
         dockerfile: docker/db/Dockerfile
         args:
             POSTGRES_VERSION: ${POSTGRES_VERSION}
@@ -31,6 +33,7 @@ services:
         start_period: 10s
   php:
     build:
+        context: .
         dockerfile: docker/php/Dockerfile
     restart: unless-stopped
     depends_on:
@@ -40,6 +43,7 @@ services:
         - internal
   migrations:
       build:
+          context: .
           dockerfile: docker/php/Dockerfile
       depends_on:
           db:
@@ -49,6 +53,7 @@ services:
           - internal
   scheduler:
       build:
+          context: .
           dockerfile: docker/php/Dockerfile
       restart: unless-stopped
       depends_on:
