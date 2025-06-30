@@ -12,4 +12,6 @@ interface MailTelegramRepositoryInterface
     public function findAll(): array;
 
     public function findById(int $id): ?MailTelegram;
+
+    public function save(MailTelegram $mailTelegram): MailTelegram;
 }

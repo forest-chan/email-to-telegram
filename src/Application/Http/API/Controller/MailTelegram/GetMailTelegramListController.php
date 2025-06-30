@@ -29,7 +29,7 @@ class GetMailTelegramListController extends AbstractAPIController
                 'exception' => (string) $exception,
             ]);
 
-            return $this->jsonErrorResponse([], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->jsonErrorResponse([self::INTERNAL_SERVER_ERROR_ERROR_MESSAGE], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

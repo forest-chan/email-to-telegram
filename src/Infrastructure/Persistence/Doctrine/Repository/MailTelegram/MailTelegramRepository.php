@@ -18,6 +18,14 @@ class MailTelegramRepository extends EntityRepository implements MailTelegramRep
         return $this->find($id);
     }
 
+    public function save(MailTelegram $mailTelegram): MailTelegram
+    {
+        $this->getEntityManager()->persist($mailTelegram);
+        $this->getEntityManager()->flush();
+
+        return $mailTelegram;
+    }
+
     protected function getEntityName(): string
     {
         return MailTelegram::class;

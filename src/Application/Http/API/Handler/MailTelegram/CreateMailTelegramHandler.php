@@ -8,12 +8,13 @@ use App\Application\Http\API\DTO\MailTelegram\CreateMailTelegramRequestDTO;
 use App\Domain\Entity\MailTelegram\MailTelegram;
 use App\Domain\Enum\EncodingType;
 use App\Domain\Enum\MailDirectory;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Domain\Repository\MailTelegram\MailTelegramRepositoryInterface;
 
 class CreateMailTelegramHandler
 {
-    public function __construct(private EntityManagerInterface $entityManager)
-    {
+    public function __construct(
+        private MailTelegramRepositoryInterface $mailTelegramRepository
+    ) {
     }
 
     public function handle(CreateMailTelegramRequestDTO $requestDTO): void
@@ -27,7 +28,6 @@ class CreateMailTelegramHandler
             telegramChatId: $requestDTO->getTelegramChatId(),
         );
 
-        $this->entityManager->persist($mailTelegram);
-        $this->entityManager->flush();
+        $this->mailTelegramRepository->save($mailTelegram);
     }
 }
