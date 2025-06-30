@@ -4,5 +4,4 @@ docker-compose.override.yaml
 .idea
 README.md
 var
-.env
 .env.example
