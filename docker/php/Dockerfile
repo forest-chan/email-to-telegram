@@ -5,7 +5,7 @@ WORKDIR /var/www/html
 COPY . /var/www/html
 COPY ./etc/crontab /etc/cron.d/crontab
 
-RUN chown -R www-data:www-data /var/www/html/.* \
+RUN chown -R www-data:www-data /var/www/html/ \
     && apt-get update && apt-get install -y \
     libkrb5-dev \
     libc-client2007e \
