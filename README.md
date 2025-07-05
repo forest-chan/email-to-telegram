@@ -1,1 +1,1 @@
-# email-to-telegram
+# mail-telegram-forwarder
