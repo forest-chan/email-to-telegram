@@ -8,7 +8,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-blue.svg?logo=postgresql)
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
-![Logo](public/logo.png)
+<img src="public/logo.png" alt="Bot Logo" width="300"/>
 
 This is a Telegram bot that automatically forwards incoming emails to a specified Telegram chat using the Telegram Bot API.
 
