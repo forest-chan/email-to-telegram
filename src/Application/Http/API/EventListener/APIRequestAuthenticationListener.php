@@ -14,6 +14,7 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 
 class APIRequestAuthenticationListener
 {
+    private const API_ROUTE_PREFIX = '/api';
     private const X_API_TOKEN_HEADER = 'X-API-Token';
     private const NOT_AUTHENTICATED_ERROR_MESSAGE = 'Not authenticated';
 
@@ -26,7 +27,13 @@ class APIRequestAuthenticationListener
 
     public function onKernelRequest(RequestEvent $event): void
     {
-        if ($this->isAuthenticated($event->getRequest())) {
+        $request = $event->getRequest();
+
+        if (!$this->isAPIRequest($request)) {
+            return;
+        }
+
+        if ($this->isRequestAuthenticated($request)) {
             return;
         }
 
@@ -42,7 +49,12 @@ class APIRequestAuthenticationListener
         );
     }
 
-    private function isAuthenticated(Request $request): bool
+    private function isAPIRequest(Request $request): bool
+    {
+        return str_starts_with($request->getPathInfo(), self::API_ROUTE_PREFIX);
+    }
+
+    private function isRequestAuthenticated(Request $request): bool
     {
         $APIToken = $request->headers->get(self::X_API_TOKEN_HEADER);
 
