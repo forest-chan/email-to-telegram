@@ -19,6 +19,27 @@ class TelegramBotClientLoggingDecorator implements TelegramBotClientInterface
     /**
      * @throws TelegramBotException
      */
+    public function processCommands(): void
+    {
+        try {
+            $this->innerClient->processCommands();
+        } catch (TelegramBotException $exception) {
+            $this->logger->error(
+                message: 'Process telegram bot commands failed',
+                context: [
+                    'method' => __METHOD__,
+                    'exception' => (string) $exception,
+                    'exceptionMessage' => $exception->getMessage(),
+                ]
+            );
+
+            throw $exception;
+        }
+    }
+
+    /**
+     * @throws TelegramBotException
+     */
     public function sendMessage(SendMessageRequestDTO $sendMessageRequestDTO): void
     {
         $this->logger->info(

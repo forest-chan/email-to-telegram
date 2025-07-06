@@ -6,6 +6,7 @@ namespace App\Infrastructure\TelegramBot\Factory;
 
 use App\Infrastructure\TelegramBot\Client\TelegramBotClient;
 use App\Infrastructure\TelegramBot\Client\TelegramBotClientInterface;
+use App\Infrastructure\TelegramBot\DTO\TelegramBotDTO;
 use App\Infrastructure\TelegramBot\Exception\TelegramBotException;
 use Psr\Log\LoggerInterface;
 use Telegram\Bot\Api as TelegramBotAPI;
@@ -21,10 +22,12 @@ class TelegramBotClientFactory implements TelegramBotClientFactoryInterface
     /**
      * @throws TelegramBotException
      */
-    public function create(string $telegramBotToken): TelegramBotClientInterface
+    public function create(TelegramBotDTO $telegramBotDTO): TelegramBotClientInterface
     {
         try {
-            $telegramBotAPI = new TelegramBotAPI($telegramBotToken);
+            $telegramBotAPI = new TelegramBotAPI($telegramBotDTO->getTelegramBotToken());
+
+            $telegramBotAPI->addCommands($telegramBotDTO->getCommands());
         } catch (TelegramSDKException $exception) {
             $this->logger->error(
                 message: 'Failed to create telegram bot client',

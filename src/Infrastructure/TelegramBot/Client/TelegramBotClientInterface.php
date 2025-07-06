@@ -8,5 +8,7 @@ use App\Infrastructure\TelegramBot\DTO\SendMessageRequestDTO;
 
 interface TelegramBotClientInterface
 {
+    public function processCommands(): void;
+
     public function sendMessage(SendMessageRequestDTO $sendMessageRequestDTO): void;
 }

@@ -19,6 +19,18 @@ class TelegramBotClient implements TelegramBotClientInterface
     /**
      * @throws TelegramBotException
      */
+    public function processCommands(): void
+    {
+        try {
+            $this->telegramBotAPI->commandsHandler(true);
+        } catch (TelegramSDKException $exception) {
+            throw new TelegramBotException($exception->getMessage());
+        }
+    }
+
+    /**
+     * @throws TelegramBotException
+     */
     public function sendMessage(SendMessageRequestDTO $sendMessageRequestDTO): void
     {
         try {

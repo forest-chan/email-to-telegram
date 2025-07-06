@@ -6,6 +6,7 @@ namespace App\Infrastructure\TelegramBot\Factory;
 
 use App\Infrastructure\TelegramBot\Client\TelegramBotClientInterface;
 use App\Infrastructure\TelegramBot\Client\TelegramBotClientLoggingDecorator;
+use App\Infrastructure\TelegramBot\DTO\TelegramBotDTO;
 use Psr\Log\LoggerInterface;
 
 class TelegramBotClientLoggingDecoratorFactory implements TelegramBotClientFactoryInterface
@@ -16,9 +17,9 @@ class TelegramBotClientLoggingDecoratorFactory implements TelegramBotClientFacto
     ) {
     }
 
-    public function create(string $telegramBotToken): TelegramBotClientInterface
+    public function create(TelegramBotDTO $telegramBotDTO): TelegramBotClientInterface
     {
-        $innerClient = $this->innerClientFactory->create($telegramBotToken);
+        $innerClient = $this->innerClientFactory->create($telegramBotDTO);
 
         return new TelegramBotClientLoggingDecorator($this->logger, $innerClient);
     }

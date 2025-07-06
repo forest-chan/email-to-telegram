@@ -1,3 +1,9 @@
+# telegram bot routes
+telegram_bot_webhook_mail_telegram:
+    path: /telegram-bot/webhook/mail-telegram
+    controller: App\Application\Http\TelegramBot\Controller\Webhook\MailTelegramWebhookController
+    methods: [ POST ]
+
 # api routes
 # api version
 api_get_version:
