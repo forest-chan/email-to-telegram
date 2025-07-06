@@ -40,6 +40,14 @@ services:
     App\Application\Http\API\EventListener\APIRequestAuthenticationListener:
         tags:
             - { name: 'kernel.event_listener', event: kernel.request, method: onKernelRequest, priority: 100 }
+        arguments:
+            $tokenAuthenticator: '@app.token_authenticator.api'
+    App\Application\Http\TelegramBot\EventListener\TelegramBotRequestAuthenticationListener:
+        tags:
+            - { name: 'kernel.event_listener', event: kernel.request, method: onKernelRequest, priority: 100 }
+        arguments:
+            $tokenAuthenticator: '@app.token_authenticator.telegram_bot'
+
     # handlers
     App\Application\Http\API\Handler\Version\GetVersionHandler:
         arguments:
@@ -49,11 +57,15 @@ services:
         arguments:
             $retriesCount: '%env(resolve:MAIL_TELEGRAM_FORWARDER_RETRIES_COUNT)%'
     # services
-    App\Application\Service\Auth\TokenAuthenticatorInterface:
-        alias: App\Application\Service\Auth\APITokenAuthenticator
-    App\Application\Service\Auth\APITokenAuthenticator:
+    App\Application\Service\Auth\TokenAuthenticatorInterface: ~
+    app.token_authenticator.api:
+        class: App\Application\Service\Auth\TokenAuthenticator
         arguments:
-            $APIToken: '%env(resolve:API_AUTH_TOKEN)%'
+            $token: '%env(resolve:API_AUTH_TOKEN)%'
+    app.token_authenticator.telegram_bot:
+        class: App\Application\Service\Auth\TokenAuthenticator
+        arguments:
+            $token: '%env(resolve:TELEGRAM_BOT_AUTH_TOKEN)%'
     App\Application\Service\MailTelegram\Formatter\MailTelegramMessageFormatterInterface:
         alias: App\Application\Service\MailTelegram\Formatter\MailTelegramMessageFormatter
     App\Application\Service\MailTelegram\Formatter\MessageHeader\MailTelegramMessageHeaderFormatterInterface:
@@ -76,7 +88,11 @@ services:
             $formatters: !tagged_iterator app.mail_telegram_message_body_formatter
     App\Application\Service\MailTelegram\Formatter\Sanitizer\HtmlTagSymbolsSanitizer: ~
     App\Application\Service\MailTelegram\Forwarder\MailTelegramMessageForwarder: ~
+    App\Application\Service\TelegramBot\Command\StartCommand: ~
     App\Application\Service\TelegramBot\Registry\TelegramBotClientRegistry:
         arguments:
             $telegramBotConfig:
-                'mail_telegram_forwarder': '%env(resolve:MAIL_TELEGRAM_FORWARDER_BOT_TOKEN)%'
+                'mail_telegram_forwarder':
+                    'telegram_bot_token': '%env(resolve:MAIL_TELEGRAM_FORWARDER_BOT_TOKEN)%'
+                    'commands':
+                        - '@App\Application\Service\TelegramBot\Command\StartCommand'

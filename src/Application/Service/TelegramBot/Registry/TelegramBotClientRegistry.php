@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Service\TelegramBot\Registry;
 
+use App\Application\Service\TelegramBot\Assembler\TelegramBotDTOAssembler;
 use App\Application\Service\TelegramBot\Enum\TelegramBot;
 use App\Infrastructure\TelegramBot\Client\TelegramBotClientInterface;
 use App\Infrastructure\TelegramBot\Factory\TelegramBotClientFactoryInterface;
@@ -14,9 +15,9 @@ class TelegramBotClientRegistry
     /** @var array<TelegramBotClientInterface> $telegramBotClients */
     private array $telegramBotClients = [];
 
-    /** @param array<string,string> $telegramBotConfig */
     public function __construct(
         private array $telegramBotConfig,
+        private TelegramBotDTOAssembler $telegramBotDTOAssembler,
         private TelegramBotClientFactoryInterface $telegramBotClientFactory,
     ) {
     }
@@ -32,9 +33,9 @@ class TelegramBotClientRegistry
         $telegramBotClient = $this->telegramBotClients[$telegramBotName] ?? null;
 
         if (!$telegramBotClient instanceof TelegramBotClientInterface) {
-            $this->telegramBotClients[$telegramBotName] = $this->telegramBotClientFactory->create(
-                telegramBotToken: $this->telegramBotConfig[$telegramBotName]
-            );
+            $telegramBotDTO = $this->telegramBotDTOAssembler->assembleFromConfig($this->telegramBotConfig[$telegramBotName]);
+
+            $this->telegramBotClients[$telegramBotName] = $this->telegramBotClientFactory->create($telegramBotDTO);
         }
 
         return $this->telegramBotClients[$telegramBotName];
